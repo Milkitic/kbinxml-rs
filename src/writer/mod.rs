@@ -1,3 +1,5 @@
+pub mod buffer;
+
 extern crate stringreader;
 extern crate xml;
 
@@ -6,7 +8,7 @@ use std::{collections::BTreeMap, io::BufReader};
 use stringreader::StringReader;
 use xml::reader::{EventReader, XmlEvent};
 
-use crate::traits::MyWriter;
+use crate::traits::BinWriter;
 
 pub struct KBinWriter {}
 
@@ -16,7 +18,7 @@ impl KBinWriter {
     }
 }
 
-impl MyWriter for KBinWriter {
+impl BinWriter for KBinWriter {
     fn write(self, content: &str) -> Vec<u8> {
         let sr = StringReader::new(content);
         let buf_reader = BufReader::new(sr);

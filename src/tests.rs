@@ -7,8 +7,10 @@ mod tests {
     use xml::reader::{EventReader, XmlEvent};
 
     use crate::{
-        datamapping::converter::ValueConverter, traits::MyWriter, types::StringToByteFunc,
-        writer::KBinWriter,
+        datamapping::converter::ValueConverter,
+        traits::{BinWriter, BufferWrite},
+        types::StringToByteFunc,
+        writer::{buffer::DataBufferWriter, KBinWriter},
     };
 
     fn indent(size: usize) -> String {
@@ -78,5 +80,13 @@ mod tests {
             let e = val.unwrap_err();
             eprintln!("error: {}", e);
         }
+    }
+
+    #[test]
+    fn write_buffers() {
+        let dbw = DataBufferWriter::new();
+        let bytes = dbw.to_bytes();
+        let b = bytes.to_owned();
+        println!("{:?}", b);
     }
 }
