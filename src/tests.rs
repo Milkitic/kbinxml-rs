@@ -84,9 +84,17 @@ mod tests {
 
     #[test]
     fn write_buffers() {
-        let dbw = DataBufferWriter::new();
-        let bytes = dbw.to_bytes();
-        let b = bytes.to_owned();
-        println!("{:?}", b);
+        let sb = DataBufferWriter::new_with_code_name("shift_jis");
+        if sb.is_ok() {
+            let g = sb.unwrap();
+            let e = g.encoding();
+            println!("{:?}", e.name());
+        } else {
+            println!("NOOOOO!!!");
+        }
+        // let dbw = DataBufferWriter::new();
+        // let bytes = dbw.to_bytes();
+        // let b = bytes.to_owned();
+        // println!("{:?}", b);
     }
 }
