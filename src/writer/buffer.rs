@@ -2,7 +2,7 @@ use std::io::{Error, Result, Write};
 
 use encoding::Encoding;
 
-use crate::{traits::BufferWrite, types::BoxResult};
+use crate::{traits::BigEndianBinaryWrite, types::BoxResult};
 
 pub struct NodeBufferWriter {
     stream: Vec<u8>,
@@ -11,6 +11,10 @@ pub struct NodeBufferWriter {
 impl NodeBufferWriter {
     pub fn new() -> Self {
         Self { stream: Vec::new() }
+    }
+
+    pub fn write_string(&mut self, s: &String) -> BoxResult<()> {
+        todo!()
     }
 
     pub fn pad(&mut self) -> BoxResult<()> {
@@ -23,7 +27,7 @@ impl NodeBufferWriter {
     }
 }
 
-impl BufferWrite for NodeBufferWriter {
+impl BigEndianBinaryWrite for NodeBufferWriter {
     fn write_bytes(&mut self, buffer: &[u8]) -> BoxResult<()> {
         let _result = self.stream.write(buffer)?;
         Ok(())
@@ -178,7 +182,7 @@ impl DataBufferWriter<'_> {
     }
 }
 
-impl BufferWrite for DataBufferWriter<'_> {
+impl BigEndianBinaryWrite for DataBufferWriter<'_> {
     fn write_bytes(&mut self, buffer: &[u8]) -> BoxResult<()> {
         match buffer.len() {
             1 => self.write_8bit_aligned(buffer),

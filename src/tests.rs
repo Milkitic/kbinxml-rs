@@ -8,7 +8,7 @@ mod tests {
 
     use crate::{
         datamapping::converter::ValueConverter,
-        traits::{BinWriter, BufferWrite},
+        traits::{BinWriter, BigEndianBinaryWrite},
         types::StringToByteFunc,
         writer::{buffer::DataBufferWriter, KBinWriter},
     };
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn mine() {
-        let writer = KBinWriter::new();
+        let writer = KBinWriter::new_with_code_name("shift_jis").unwrap();
         writer.write("<test></test>");
 
         let val = ValueConverter::u32_to_bytes(String::from("1242342134343212341"));

@@ -1,10 +1,10 @@
 use crate::types::BoxResult;
 
 pub trait BinWriter {
-    fn write(self, s: &str) -> Vec<u8>;
+    fn write(self, s: &str) -> BoxResult<Vec<u8>>;
 }
 
-pub trait BufferWrite {
+pub trait BigEndianBinaryWrite {
     fn to_bytes(&self) -> &Vec<u8>;
 
     fn write_bytes(&mut self, buffer: &[u8]) -> BoxResult<()>;

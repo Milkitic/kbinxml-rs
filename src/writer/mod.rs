@@ -8,18 +8,38 @@ use std::{collections::BTreeMap, io::BufReader};
 use stringreader::StringReader;
 use xml::reader::{EventReader, XmlEvent};
 
-use crate::traits::BinWriter;
+use crate::{
+    traits::{BigEndianBinaryWrite, BinWriter},
+    types::BoxResult,
+};
 
-pub struct KBinWriter {}
+use self::buffer::{DataBufferWriter, NodeBufferWriter};
 
-impl KBinWriter {
-    pub fn new() -> Self {
-        Self {}
+pub struct KBinWriter<'a> {
+    node_writer: NodeBufferWriter,
+    data_writer: DataBufferWriter<'a>,
+}
+
+impl<'a> KBinWriter<'a> {
+    pub fn new_with_code_name(code_name: &str) -> BoxResult<Self> {
+        let data_writer = DataBufferWriter::new_with_code_name(code_name)?;
+        Ok(Self {
+            node_writer: NodeBufferWriter::new(),
+            data_writer: data_writer,
+        })
+    }
+
+    pub fn new_with_code_page(code_page: usize) -> BoxResult<Self> {
+        let data_writer = DataBufferWriter::new_with_code_page(code_page)?;
+        Ok(Self {
+            node_writer: NodeBufferWriter::new(),
+            data_writer: data_writer,
+        })
     }
 }
 
-impl BinWriter for KBinWriter {
-    fn write(self, content: &str) -> Vec<u8> {
+impl BinWriter for KBinWriter<'_> {
+    fn write(mut self, content: &str) -> BoxResult<Vec<u8>> {
         let sr = StringReader::new(content);
         let buf_reader = BufReader::new(sr);
         let mut conf = xml::reader::ParserConfig::new();
@@ -59,6 +79,8 @@ impl BinWriter for KBinWriter {
                     }
 
                     if type_str.is_empty() {
+                        self.node_writer.write_u8(1)?;
+                        self.node_writer.write_string(&name.local_name)?;
                         // _nodeBuffer.WriteU8(1);
                         // _nodeBuffer.WriteString(reader.Name);
                     } else {
@@ -121,7 +143,7 @@ impl BinWriter for KBinWriter {
 
         // return output.ToArray();
 
-        Vec::new()
+        Ok(Vec::new())
     }
 }
 

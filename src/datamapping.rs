@@ -32,9 +32,9 @@ impl NodeType {
     }
 }
 
-pub struct type_dictionary {}
+pub struct TypeDictionary {}
 
-impl type_dictionary {
+impl TypeDictionary {
     pub fn get_node_type(flag: i32) -> BoxResult<NodeType> {
         match flag {
             2  => Ok(NodeType::new(1, 1,  "s8"    .to_string(),|str|{ Ok(ValueConverter::s8_to_bytes    (str)?.to_vec()) })),
