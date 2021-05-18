@@ -6,7 +6,10 @@ mod tests {
     use std::io::BufReader;
     use xml::reader::{EventReader, XmlEvent};
 
-    use crate::{datamapping::converter::ValueConverter, traits::MyWriter, types::StringToByteFunc, writer::KBinWriter};
+    use crate::{
+        datamapping::converter::ValueConverter, traits::MyWriter, types::StringToByteFunc,
+        writer::KBinWriter,
+    };
 
     fn indent(size: usize) -> String {
         const INDENT: &'static str = "    ";
@@ -68,6 +71,12 @@ mod tests {
         let writer = KBinWriter::new();
         writer.write("<test></test>");
 
-        let val = ValueConverter::u8_to_bytes(String::from(""));
+        let val = ValueConverter::u32_to_bytes(String::from("1242342134343212341"));
+        if val.is_ok() {
+            println!("{:?}", val.unwrap());
+        } else {
+            let e = val.unwrap_err();
+            eprintln!("error: {}", e);
+        }
     }
 }
