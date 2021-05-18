@@ -1,18 +1,18 @@
 [package]
-name = "kbinxml-rs"
-version = "0.1.0"
 authors = ["Milkitic <Milkitic@126.com>"]
 edition = "2018"
+name = "kbinxml-rs"
+version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-xml-rs = "0.8"
-stringreader = "0.1.1"
-encoding = "0.2"
-hex = "0.4.3"
-
 [lib]
-name="kbinxmlrs"
-path = "src/lib.rs"
 crate-type = ["cdylib"]
+name = "kbinxmlrs"
+path = "src/lib.rs"
+
+[dependencies]
+encoding = "0.2.33"
+hex = "0.4.3"
+stringreader = "0.1.1"
+xml-rs = "0.8.3"

@@ -1,5 +1,7 @@
 use std::io::Error;
 
+use encoding::Encoding;
+
 use crate::types::{BoxResult, ByteToStringFunc, StringToByteFunc};
 
 use self::converter::ValueConverter;
@@ -32,9 +34,97 @@ impl NodeType {
     }
 }
 
+pub struct EncodingDictionary {}
+
+impl EncodingDictionary {
+    pub fn get_encode_flag(encoding: &dyn Encoding) -> BoxResult<i32> {
+        if encoding.whatwg_name().is_none() {
+            return Err(Box::new(Error::new(
+                std::io::ErrorKind::InvalidInput,
+                format!("Unsupported encoding: {}", encoding.name()),
+            )));
+        }
+
+        let name = encoding.whatwg_name().unwrap();
+        match name {
+            "ascii" => Ok(0x20),
+            "windows-1252" => Ok(0x40),
+            "euc-jp" => Ok(0x60),
+            "shift_jis" => Ok(0x80),
+            "utf-8" => Ok(0xA0),
+            _ => Err(Box::new(Error::new(
+                std::io::ErrorKind::InvalidInput,
+                format!("Unsupported encoding: {}", name),
+            ))),
+        }
+    }
+}
+
 pub struct TypeDictionary {}
 
 impl TypeDictionary {
+    pub fn get_node_flag(t: &String) -> BoxResult<i32>{
+        match t.as_str(){
+            "s8"    =>Ok(2 ),
+            "u8"    =>Ok(3 ),
+            "s16"   =>Ok(4 ),
+            "u16"   =>Ok(5 ),
+            "s32"   =>Ok(6 ),
+            "u32"   =>Ok(7 ),
+            "s64"   =>Ok(8 ),
+            "u64"   =>Ok(9 ),
+            "bin"   =>Ok(10),
+            "str"   =>Ok(11),
+            "ip4"   =>Ok(12),
+            "time"  =>Ok(13),
+            "float" =>Ok(14),
+            "double"=>Ok(15),
+            "2s8"   =>Ok(16),
+            "2u8"   =>Ok(17),
+            "2s16"  =>Ok(18),
+            "2u16"  =>Ok(19),
+            "2s32"  =>Ok(20),
+            "2u32"  =>Ok(21),
+            "vs64"  =>Ok(22),
+            "vu64"  =>Ok(23),
+            "2f"    =>Ok(24),
+            "vd"    =>Ok(25),
+            "3s8"   =>Ok(26),
+            "3u8"   =>Ok(27),
+            "3s16"  =>Ok(28),
+            "3u16"  =>Ok(29),
+            "3s32"  =>Ok(30),
+            "3u32"  =>Ok(31),
+            "3s64"  =>Ok(32),
+            "3u64"  =>Ok(33),
+            "3f"    =>Ok(34),
+            "3d"    =>Ok(35),
+            "4s8"   =>Ok(36),
+            "4u8"   =>Ok(37),
+            "4s16"  =>Ok(38),
+            "4u16"  =>Ok(39),
+            "vs32"  =>Ok(40),
+            "vu32"  =>Ok(41),
+            "4s64"  =>Ok(42),
+            "4u64"  =>Ok(43),
+            "vf"    =>Ok(44),
+            "4d"    =>Ok(45),
+            "vs8"   =>Ok(48),
+            "vu8"   =>Ok(49),
+            "vs16"  =>Ok(50),
+            "vu16"  =>Ok(51),
+            "bool"  =>Ok(52),
+            "2b"    =>Ok(53),
+            "3b"    =>Ok(54),
+            "4b"    =>Ok(55),
+            "vb"    =>Ok(56),
+            _ => Err(Box::new(Error::new(
+                std::io::ErrorKind::InvalidInput,
+                format!("Invalid type: {}", t),
+            ))),
+        }
+    }
+    
     pub fn get_node_type(flag: i32) -> BoxResult<NodeType> {
         match flag {
             2  => Ok(NodeType::new(1, 1,  "s8"    .to_string(),|str|{ Ok(ValueConverter::s8_to_bytes    (str)?.to_vec()) })),

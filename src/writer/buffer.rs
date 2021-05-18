@@ -38,6 +38,27 @@ impl BigEndianBinaryWrite for NodeBufferWriter {
     }
 }
 
+pub struct BigEndianBinaryWriter {
+    stream: Vec<u8>,
+}
+
+impl BigEndianBinaryWriter {
+    pub fn new() -> Self {
+        Self { stream: Vec::new() }
+    }
+}
+
+impl BigEndianBinaryWrite for BigEndianBinaryWriter {
+    fn write_bytes(&mut self, buffer: &[u8]) -> BoxResult<()> {
+        let _result = self.stream.write(buffer)?;
+        Ok(())
+    }
+
+    fn to_bytes(&self) -> &Vec<u8> {
+        &self.stream
+    }
+}
+
 pub struct DataBufferWriter<'a> {
     stream: Vec<u8>,
     pos8: i32,

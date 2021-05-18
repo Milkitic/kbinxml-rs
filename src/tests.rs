@@ -8,7 +8,7 @@ mod tests {
 
     use crate::{
         datamapping::converter::ValueConverter,
-        traits::{BinWriter, BigEndianBinaryWrite},
+        traits::{BigEndianBinaryWrite, BinWriter},
         types::StringToByteFunc,
         writer::{buffer::DataBufferWriter, KBinWriter},
     };
@@ -84,11 +84,10 @@ mod tests {
 
     #[test]
     fn write_buffers() {
-        let sb = DataBufferWriter::new_with_code_name("shift_jis");
-        if sb.is_ok() {
-            let g = sb.unwrap();
-            let e = g.encoding();
-            println!("{:?}", e.name());
+        let result = KBinWriter::new_with_code_name("shift_jis");
+        if result.is_ok() {
+            let writer = result.unwrap();
+            let array = writer.write("<test></test>");
         } else {
             println!("NOOOOO!!!");
         }
