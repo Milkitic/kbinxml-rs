@@ -87,7 +87,9 @@ mod tests {
         let result = KBinWriter::new_with_code_name("shift_jis");
         if result.is_ok() {
             let writer = result.unwrap();
-            let array = writer.write("<test></test>");
+            let array = writer.write("<test></test>").unwrap();
+
+            let g = array.len();
         } else {
             println!("NOOOOO!!!");
         }

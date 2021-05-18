@@ -17,23 +17,25 @@ use crate::{
 use self::buffer::{BigEndianBinaryWriter, DataBufferWriter, NodeBufferWriter};
 
 pub struct KBinWriter<'a> {
-    node_writer: NodeBufferWriter,
+    node_writer: NodeBufferWriter<'a>,
     data_writer: DataBufferWriter<'a>,
 }
 
 impl<'a> KBinWriter<'a> {
     pub fn new_with_code_name(code_name: &str) -> BoxResult<Self> {
         let data_writer = DataBufferWriter::new_with_code_name(code_name)?;
+        let node_writer = NodeBufferWriter::new_with_code_name(true, code_name)?;
         Ok(Self {
-            node_writer: NodeBufferWriter::new(),
+            node_writer: node_writer,
             data_writer: data_writer,
         })
     }
 
     pub fn new_with_code_page(code_page: usize) -> BoxResult<Self> {
         let data_writer = DataBufferWriter::new_with_code_page(code_page)?;
+        let node_writer = NodeBufferWriter::new_with_code_page(true, code_page)?;
         Ok(Self {
-            node_writer: NodeBufferWriter::new(),
+            node_writer: node_writer,
             data_writer: data_writer,
         })
     }

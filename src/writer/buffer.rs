@@ -2,19 +2,57 @@ use std::io::{Error, Result, Write};
 
 use encoding::Encoding;
 
-use crate::{traits::BigEndianBinaryWrite, types::BoxResult};
+use crate::{datamapping::Sixbit, traits::BigEndianBinaryWrite, types::BoxResult};
 
-pub struct NodeBufferWriter {
+pub struct NodeBufferWriter<'a> {
     stream: Vec<u8>,
+    compressed: bool,
+    encoding: &'a dyn Encoding,
 }
 
-impl NodeBufferWriter {
-    pub fn new() -> Self {
-        Self { stream: Vec::new() }
+impl NodeBufferWriter<'_> {
+    pub fn new_with_code_name(compressed: bool, code_name: &str) -> Result<Self> {
+        let encoding = encoding::label::encoding_from_whatwg_label(code_name);
+        if encoding.is_some() {
+            return Ok(Self {
+                encoding: encoding.unwrap(),
+                stream: Vec::new(),
+                compressed,
+            });
+        } else {
+            return Err(Error::new(
+                std::io::ErrorKind::NotFound,
+                "Could not find target encoding.",
+            ));
+        }
+    }
+
+    pub fn new_with_code_page(compressed: bool, code_page: usize) -> Result<Self> {
+        let encoding = encoding::label::encoding_from_windows_code_page(code_page);
+        if encoding.is_some() {
+            return Ok(Self {
+                encoding: encoding.unwrap(),
+                stream: Vec::new(),
+                compressed,
+            });
+        } else {
+            return Err(Error::new(
+                std::io::ErrorKind::NotFound,
+                "Could not find target encoding.",
+            ));
+        }
     }
 
     pub fn write_string(&mut self, s: &String) -> BoxResult<()> {
-        todo!()
+        if self.compressed {
+            self.write_u8(s.len() as u8)?;
+            self.write_bytes(&Sixbit::encode(s)?)?;
+        } else {
+            self.write_u8(((s.len() - 1) | (1 << 6)) as u8)?;
+            self.write_bytes(&self.encoding.encode(s, encoding::EncoderTrap::Replace)?)?;
+        }
+
+        Ok(())
     }
 
     pub fn pad(&mut self) -> BoxResult<()> {
@@ -27,7 +65,7 @@ impl NodeBufferWriter {
     }
 }
 
-impl BigEndianBinaryWrite for NodeBufferWriter {
+impl BigEndianBinaryWrite for NodeBufferWriter<'_> {
     fn write_bytes(&mut self, buffer: &[u8]) -> BoxResult<()> {
         let _result = self.stream.write(buffer)?;
         Ok(())

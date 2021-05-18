@@ -34,6 +34,14 @@ impl NodeType {
     }
 }
 
+pub struct Sixbit{}
+
+impl Sixbit {
+    pub fn encode(input:&String)->BoxResult<Vec<u8> >{
+        Ok(Vec::new())
+    }
+}
+
 pub struct EncodingDictionary {}
 
 impl EncodingDictionary {
