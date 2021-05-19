@@ -86,10 +86,14 @@ mod tests {
     fn write_buffers() {
         let result = KBinWriter::new_with_code_name("shift_jis");
         if result.is_ok() {
-            let mut file = File::open("file.xml").unwrap();
+            let mut file = File::open("test.xml").unwrap();
             // let file = BufReader::new(file);
             let mut buffer = String::new();
             file.read_to_string(&mut buffer).unwrap();
+
+            if buffer.starts_with("\u{feff}") {
+                buffer.remove(0);
+            }
 
             let writer = result.unwrap();
             let array = writer.write(&buffer).unwrap();

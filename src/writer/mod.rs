@@ -3,7 +3,10 @@ pub mod buffer;
 extern crate stringreader;
 extern crate xml;
 
-use std::{collections::BTreeMap, io::BufReader};
+use std::{
+    collections::BTreeMap,
+    io::{BufReader, Error},
+};
 
 use stringreader::StringReader;
 use xml::reader::{EventReader, XmlEvent};
@@ -145,8 +148,10 @@ impl BinWriter for KBinWriter<'_> {
                     holding_value = value;
                 }
                 Err(e) => {
-                    println!("Error: {}", e);
-                    break;
+                    return Err(Box::new(Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        format!("Error while reading XML: {}", e),
+                    )));
                 }
                 _ => {}
             }
