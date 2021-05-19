@@ -57,6 +57,29 @@ impl<'a> KBinWriter<'a> {
             } else if type_str == "bin" {
                 self.data_writer.write_binary(holding_value)?;
             } else {
+                let t = TypeDictionary::get_node_type(*typeid as i32)?;
+                let split = holding_value.split(' ');
+                let mut size = t.size().clone(); // let mut size = *t.size(); ?
+                if !size_str.is_empty() {
+                    size = size * size_str.parse::<i32>()?;
+                    self.data_writer.write_u32(size as u32)?;
+                }
+
+                let mut arr = vec![0; 0];
+
+                let mut i: i32 = 0;
+                for s in split {
+                    if i == size {
+                        break;
+                    }
+
+                    let mut buffer = t.get_bytes()(s)?;
+                    arr.append(&mut buffer);
+
+                    i += t.size();
+                }
+
+                self.data_writer.write_bytes(&arr)?;
             }
 
             type_str.clear();

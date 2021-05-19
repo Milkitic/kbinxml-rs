@@ -73,7 +73,7 @@ mod tests {
         let writer = KBinWriter::new_with_code_name("shift_jis").unwrap();
         writer.write("<test></test>");
 
-        let val = ValueConverter::u32_to_bytes(String::from("1242342134343212341"));
+        let val = ValueConverter::u32_to_bytes("1242342134343212341");
         if val.is_ok() {
             println!("{:?}", val.unwrap());
         } else {

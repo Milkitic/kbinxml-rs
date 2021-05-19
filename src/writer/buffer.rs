@@ -160,21 +160,21 @@ impl DataBufferWriter<'_> {
     }
 
     pub fn write_string(&mut self, s: &String) -> BoxResult<()> {
-        let vec = self.encoding.encode(s, encoding::EncoderTrap::Replace)?;
+        let mut vec = self.encoding.encode(s, encoding::EncoderTrap::Replace)?;
 
         self.write_u32(vec.len() as u32)?;
-        self.write_32bit_aligned(&vec)?;
+        self.write_32bit_aligned(&mut vec)?;
         Ok(())
     }
 
     pub fn write_binary(&mut self, s: &String) -> BoxResult<()> {
         self.write_u32(s.len() as u32)?;
-        let decoded = hex::decode(s)?;
-        self.write_32bit_aligned(&decoded)?;
+        let mut decoded = hex::decode(s)?;
+        self.write_32bit_aligned(&mut decoded)?;
         Ok(())
     }
 
-    fn write_32bit_aligned(&mut self, buffer: &Vec<u8>) -> BoxResult<()> {
+    fn write_32bit_aligned(&mut self, buffer: &mut Vec<u8>) -> BoxResult<()> {
         let stream = &mut self.stream;
         while self.pos32 > stream.len() as i32 {
             let _result = stream.write(&[0])?;
@@ -194,7 +194,7 @@ impl DataBufferWriter<'_> {
             self.pos32 += 4;
         }
 
-        self.pos16 = self.set_range(&Vec::from(buffer), self.pos16);
+        self.pos16 = self.set_range(&mut Vec::from(buffer), self.pos16);
         self.realign16_8();
 
         Ok(())
@@ -210,16 +210,17 @@ impl DataBufferWriter<'_> {
             self.pos32 += 4;
         }
 
-        self.pos8 = self.set_range(&Vec::from(buffer), self.pos8);
+        self.pos8 = self.set_range(&mut Vec::from(buffer), self.pos8);
         self.realign16_8();
 
         Ok(())
     }
 
-    fn set_range(&mut self, buffer: &Vec<u8>, mut offset: i32) -> i32 {
+    fn set_range(&mut self, buffer: &mut Vec<u8>, mut offset: i32) -> i32 {
         if offset == self.stream.len() as i32 {
-            self.stream.extend(buffer);
-            offset += buffer.len() as i32;
+            let len = buffer.len();
+            self.stream.append(buffer);
+            offset += len as i32;
         } else {
             for i in 0..buffer.len() {
                 self.stream[offset as usize] = buffer[i];
@@ -246,7 +247,7 @@ impl BigEndianBinaryWrite for DataBufferWriter<'_> {
         match buffer.len() {
             1 => self.write_8bit_aligned(buffer),
             2 => self.write_16bit_aligned(buffer),
-            _ => self.write_32bit_aligned(&Vec::from(buffer)),
+            _ => self.write_32bit_aligned(&mut Vec::from(buffer)),
         }
     }
 

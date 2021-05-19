@@ -34,6 +34,26 @@ impl NodeType {
             // get_string,
         }
     }
+
+    /// Get a reference to the node type's size.
+    pub fn size(&self) -> &i32 {
+        &self.size
+    }
+
+    /// Get a reference to the node type's count.
+    pub fn count(&self) -> &i32 {
+        &self.count
+    }
+
+    /// Get a reference to the node type's name.
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+
+    /// Get a reference to the node type's get bytes.
+    pub fn get_bytes(&self) -> &StringToByteFunc {
+        &self.get_bytes
+    }
 }
 
 pub struct TypeDictionary {}
