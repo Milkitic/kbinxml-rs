@@ -2,14 +2,14 @@ extern crate xml;
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
     use std::io::BufReader;
+    use std::{fs::File, io::Read};
     use xml::reader::{EventReader, XmlEvent};
 
     use crate::{
-        datamapping::converter::ValueConverter,
         traits::{BigEndianBinaryWrite, BinWriter},
         types::StringToByteFunc,
+        util::converter::ValueConverter,
         writer::{buffer::DataBufferWriter, KBinWriter},
     };
 
@@ -86,8 +86,13 @@ mod tests {
     fn write_buffers() {
         let result = KBinWriter::new_with_code_name("shift_jis");
         if result.is_ok() {
+            let mut file = File::open("file.xml").unwrap();
+            // let file = BufReader::new(file);
+            let mut buffer = String::new();
+            file.read_to_string(&mut buffer).unwrap();
+
             let writer = result.unwrap();
-            let array = writer.write("<test></test>").unwrap();
+            let array = writer.write(&buffer).unwrap();
 
             let g = array.len();
         } else {

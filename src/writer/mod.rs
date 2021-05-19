@@ -9,9 +9,9 @@ use stringreader::StringReader;
 use xml::reader::{EventReader, XmlEvent};
 
 use crate::{
-    datamapping::{EncodingDictionary, TypeDictionary},
     traits::{BigEndianBinaryWrite, BinWriter},
     types::BoxResult,
+    util::{dictionary::EncodingDictionary, TypeDictionary},
 };
 
 use self::buffer::{BigEndianBinaryWriter, DataBufferWriter, NodeBufferWriter};

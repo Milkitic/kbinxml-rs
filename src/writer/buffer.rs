@@ -2,7 +2,7 @@ use std::io::{Error, Result, Write};
 
 use encoding::Encoding;
 
-use crate::{datamapping::Sixbit, traits::BigEndianBinaryWrite, types::BoxResult};
+use crate::{traits::BigEndianBinaryWrite, types::BoxResult, util::codec::Sixbit};
 
 pub struct NodeBufferWriter<'a> {
     stream: Vec<u8>,
