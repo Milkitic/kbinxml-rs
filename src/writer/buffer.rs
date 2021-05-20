@@ -57,8 +57,9 @@ impl NodeBufferWriter<'_> {
 
     pub fn pad(&mut self) -> BoxResult<()> {
         let stream = &mut self.stream;
-        while stream.len() % 4 != 0 {
-            let _result = stream.write(&[0])?;
+        let left = stream.len() % 4;
+        if left != 0 {
+            stream.append(&mut vec![0; 4 - left]);
         }
 
         Ok(())
@@ -176,13 +177,17 @@ impl DataBufferWriter<'_> {
 
     fn write_32bit_aligned(&mut self, buffer: &mut Vec<u8>) -> BoxResult<()> {
         let stream = &mut self.stream;
-        while self.pos32 > stream.len() as i32 {
-            let _result = stream.write(&[0])?;
+
+        let len = self.pos32 - stream.len() as i32;
+        if len > 0 {
+            stream.append(&mut vec![0; len as usize])
         }
 
         self.pos32 = self.set_range(buffer, self.pos32);
-        while self.pos32 % 4 != 0 {
-            self.pos32 += 1;
+
+        let left = self.pos32 % 4;
+        if left != 0 {
+            self.pos32 += 4 - left;
         }
 
         Ok(())
@@ -190,8 +195,9 @@ impl DataBufferWriter<'_> {
 
     fn write_16bit_aligned(&mut self, buffer: &[u8]) -> BoxResult<()> {
         let stream = &mut self.stream;
-        while self.pos16 > stream.len() as i32 {
-            let _result = stream.write(&[0])?;
+        let len = self.pos16 - stream.len() as i32;
+        if len > 0 {
+            stream.append(&mut vec![0; len as usize])
         }
 
         if self.pos16 % 4 == 0 {
@@ -206,8 +212,9 @@ impl DataBufferWriter<'_> {
 
     fn write_8bit_aligned(&mut self, buffer: &[u8]) -> BoxResult<()> {
         let stream = &mut self.stream;
-        while self.pos8 > stream.len() as i32 {
-            let _result = stream.write(&[0])?;
+        let len = self.pos8 - stream.len() as i32;
+        if len > 0 {
+            stream.append(&mut vec![0; len as usize])
         }
 
         if self.pos8 % 4 == 0 {

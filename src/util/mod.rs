@@ -1,7 +1,5 @@
 use std::io::Error;
 
-use encoding::Encoding;
-
 use crate::types::{BoxResult, ByteToStringFunc, StringToByteFunc};
 
 use self::converter::ValueConverter;
