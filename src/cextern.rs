@@ -65,7 +65,7 @@ pub extern "C" fn encode_codepage(xml_str: *const c_char, code_page: i32) -> Res
         return Result::error("Can not read string argument: xml_str.");
     }
     let xml = result.unwrap().to_string();
-    println!("XML length: {}", xml.len());
+    // println!("XML length: {}", xml.len());
 
     let result = KBinWriter::new_with_code_page(code_page as usize);
     let message = match &result {
@@ -93,8 +93,9 @@ pub extern "C" fn encode_codepage(xml_str: *const c_char, code_page: i32) -> Res
     }
 
     let arr = result1.unwrap();
-    std::mem::forget(&arr);
-    return Result::success(&arr);
+    let result = Result::success(&arr);
+    std::mem::forget(arr);
+    return result;
 }
 
 #[no_mangle]
@@ -138,6 +139,7 @@ pub extern "C" fn encode_codename(xml_str: *const c_char, code_name: *const c_ch
     }
 
     let arr = result1.unwrap();
-    std::mem::forget(&arr);
-    return Result::success(&arr);
+    let result = Result::success(&arr);
+    std::mem::forget(arr);
+    return result;
 }
