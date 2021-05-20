@@ -161,7 +161,7 @@ impl DataBufferWriter<'_> {
 
     pub fn write_string(&mut self, s: &String) -> BoxResult<()> {
         let mut vec = self.encoding.encode(s, encoding::EncoderTrap::Replace)?;
-
+        vec.push(0);
         self.write_u32(vec.len() as u32)?;
         self.write_32bit_aligned(&mut vec)?;
         Ok(())
@@ -181,6 +181,10 @@ impl DataBufferWriter<'_> {
         }
 
         self.pos32 = self.set_range(buffer, self.pos32);
+        while self.pos32 % 4 != 0 {
+            self.pos32 += 1;
+        }
+
         Ok(())
     }
 
