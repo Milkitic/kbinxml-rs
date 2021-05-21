@@ -1,15 +1,16 @@
 pub mod buffer;
 
 extern crate stringreader;
-extern crate xml;
 
 use std::{
     collections::BTreeMap,
     io::{BufReader, Error},
 };
 
+use encoding::Encoding;
+use quick_xml::{events::Event, Reader};
+use stopwatch::Stopwatch;
 use stringreader::StringReader;
-use xml::reader::{EventReader, XmlEvent};
 
 use crate::{
     traits::{BigEndianBinaryWrite, BinWriter},
@@ -100,16 +101,22 @@ impl<'a> KBinWriter<'a> {
 
         Ok(())
     }
+
+    // fn get_string(raw: &[u8], encoding: &dyn Encoding) -> BoxResult<String> {
+    //     Ok(encoding.decode(raw, encoding::DecoderTrap::Replace)?)
+    // }
 }
 
 impl BinWriter for KBinWriter<'_> {
     fn write(mut self, content: &str) -> BoxResult<Vec<u8>> {
-        let sr = StringReader::new(content);
-        let buf_reader = BufReader::new(sr);
-        let mut conf = xml::reader::ParserConfig::new();
-        conf.ignore_comments = true;
+        // let sw = Stopwatch::start_new();
+        let mut reader = Reader::from_str(content);
+        let mut buf = Vec::new();
+        reader.trim_text(true);
+        reader.check_comments(false);
 
-        let parser = EventReader::new_with_config(buf_reader, conf);
+        // let mut encoding: &(dyn Encoding + Send + Sync) =
+        //     encoding::label::encoding_from_whatwg_label("utf-8").unwrap();
 
         let mut holding_attrs: BTreeMap<String, String> = BTreeMap::new();
         let mut holding_value: String = String::new();
@@ -117,11 +124,12 @@ impl BinWriter for KBinWriter<'_> {
         let mut size_str: String = String::new();
         let mut typeid: u8 = 0;
 
-        for e in parser {
-            match e {
-                Ok(XmlEvent::StartElement {
-                    name, attributes, ..
-                }) => {
+        // let xmlSw = Stopwatch::start_new();
+        loop {
+            match reader.read_event(&mut buf) {
+                Ok(Event::Start(ref e)) => {
+                    // let name = KBinWriter::<'_>::get_string(&e.local_name(), encoding).unwrap();
+                    let name = reader.decode(&e.local_name())?.to_string();
                     self.ensure_holding(
                         &mut type_str,
                         &mut size_str,
@@ -130,21 +138,24 @@ impl BinWriter for KBinWriter<'_> {
                         &mut typeid,
                     )?;
 
-                    for attr in attributes {
-                        let name = attr.name.local_name;
-                        let value = attr.value;
-                        if name == "__type" {
-                            type_str = value;
-                        } else if name == "__count" {
-                            size_str = value;
+                    for attr in e.attributes() {
+                        let val = attr?;
+                        let attr_name = reader.decode(&val.key)?.to_string();
+                        let attr_val = reader.decode(&val.value)?.to_string();
+                        // let attr_name = KBinWriter::<'_>::get_string(val.key, encoding).unwrap();
+                        // let attr_val = KBinWriter::<'_>::get_string(&val.value, encoding).unwrap();
+                        if attr_name == "__type" {
+                            type_str = attr_val;
+                        } else if attr_name == "__count" {
+                            size_str = attr_val;
                         } else {
-                            holding_attrs.entry(name).or_insert(value);
+                            holding_attrs.entry(attr_name).or_insert(attr_val);
                         }
                     }
 
                     if type_str.is_empty() {
                         self.node_writer.write_u8(1)?;
-                        self.node_writer.write_string(&name.local_name)?;
+                        self.node_writer.write_string(&name)?;
                     } else {
                         typeid = TypeDictionary::get_node_flag(&type_str)? as u8;
 
@@ -154,10 +165,10 @@ impl BinWriter for KBinWriter<'_> {
                             self.node_writer.write_u8(typeid)?;
                         }
 
-                        self.node_writer.write_string(&name.local_name)?;
+                        self.node_writer.write_string(&name)?;
                     }
                 }
-                Ok(XmlEvent::EndElement { name }) => {
+                Ok(Event::End(e)) => {
                     self.ensure_holding(
                         &mut type_str,
                         &mut size_str,
@@ -167,9 +178,14 @@ impl BinWriter for KBinWriter<'_> {
                     )?;
                     self.node_writer.write_u8(0xFE)?;
                 }
-                Ok(XmlEvent::Characters(value)) => {
-                    holding_value = value;
+                Ok(Event::Text(e)) => {
+                    // let u8 = e.unescaped().unwrap();
+                    // let value = KBinWriter::<'_>::get_string(&u8, encoding).unwrap();
+                    let u8 = e.unescaped()?;
+                    let value = reader.decode(&u8)?;
+                    holding_value = value.to_string();
                 }
+                Ok(Event::Eof) => break, // exits the loop when reaching end of file
                 Err(e) => {
                     return Err(Box::new(Error::new(
                         std::io::ErrorKind::InvalidData,
@@ -179,6 +195,8 @@ impl BinWriter for KBinWriter<'_> {
                 _ => {}
             }
         }
+
+        // println!("XML iter: {}ms.", xmlSw.elapsed_ms());
 
         self.ensure_holding(
             &mut type_str,
@@ -209,6 +227,8 @@ impl BinWriter for KBinWriter<'_> {
         output.write_s32(array.len() as i32)?;
         output.write_bytes(array)?;
 
-        Ok(output.to_bytes().to_owned())
+        let vec = output.to_bytes().to_owned();
+        // println!("KBin write: {}ms.", sw.elapsed_ms());
+        Ok(vec)
     }
 }

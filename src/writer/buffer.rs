@@ -160,7 +160,7 @@ impl DataBufferWriter<'_> {
         Ok(())
     }
 
-    pub fn write_string(&mut self, s: &String) -> BoxResult<()> {
+    pub fn write_string(&mut self, s: &str) -> BoxResult<()> {
         let mut vec = self.encoding.encode(s, encoding::EncoderTrap::Replace)?;
         vec.push(0);
         self.write_u32(vec.len() as u32)?;
@@ -168,7 +168,7 @@ impl DataBufferWriter<'_> {
         Ok(())
     }
 
-    pub fn write_binary(&mut self, s: &String) -> BoxResult<()> {
+    pub fn write_binary(&mut self, s: &str) -> BoxResult<()> {
         self.write_u32(s.len() as u32)?;
         let mut decoded = hex::decode(s)?;
         self.write_32bit_aligned(&mut decoded)?;
