@@ -71,7 +71,7 @@ pub extern "C" fn encode_codepage(xml_str: *const c_char, code_page: i32) -> Res
     let message = match &result {
         Ok(_) => String::new(),
         Err(error) => {
-            println!("Problem creating KBinWriter: {}", error);
+            // println!("Problem creating KBinWriter: {}", error);
             format!("Problem creating KBinWriter: {}", error)
         }
     };
@@ -84,7 +84,7 @@ pub extern "C" fn encode_codepage(xml_str: *const c_char, code_page: i32) -> Res
     let message1 = match &result1 {
         Ok(_) => String::new(),
         Err(error) => {
-            println!("Problem while writing: {}", error);
+            // println!("Problem while writing: {}", error);
             format!("Problem while writing: {}", error)
         }
     };
@@ -105,7 +105,7 @@ pub extern "C" fn encode_codename(xml_str: *const c_char, code_name: *const c_ch
         return Result::error("Can not read string argument: xml_str.");
     }
     let xml = result.unwrap().to_string();
-    println!("XML length: {}", xml.len());
+    // println!("XML length: {}", xml.len());
 
     let result = unsafe { CStr::from_ptr(code_name).to_str() };
     if result.is_err() {
@@ -117,7 +117,7 @@ pub extern "C" fn encode_codename(xml_str: *const c_char, code_name: *const c_ch
     let message = match &result {
         Ok(_) => String::new(),
         Err(error) => {
-            println!("Problem creating KBinWriter: {}", error);
+            // println!("Problem creating KBinWriter: {}", error);
             format!("Problem creating KBinWriter: {}", error)
         }
     };
@@ -130,7 +130,7 @@ pub extern "C" fn encode_codename(xml_str: *const c_char, code_name: *const c_ch
     let message1 = match &result1 {
         Ok(_) => String::new(),
         Err(error) => {
-            println!("Problem while writing: {}", error);
+            // println!("Problem while writing: {}", error);
             format!("Problem while writing: {}", error)
         }
     };
