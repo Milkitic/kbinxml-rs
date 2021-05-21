@@ -6,6 +6,10 @@ version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[bin]]
+name = "kbinxml-rs"
+src = "src/main.rs"
+
 [lib]
 crate-type = ["cdylib"]
 name = "kbinxmlrs"
@@ -15,5 +19,6 @@ path = "src/lib.rs"
 encoding = "0.2.33"
 hex = "0.4.3"
 stringreader = "0.1.1"
-xml-rs = "0.8.3"
+quick-xml = "0.22.0"
+stopwatch = "0.0.7"
 phf = { version = "0.8", features = ["macros"] }
