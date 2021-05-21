@@ -26,22 +26,28 @@ impl Sixbit {
         's'=>56, 't'=>57, 'u'=>58, 'v'=>59, 'w'=>60, 'x'=>61, 'y'=>62, 'z'=>63,
     };
 
-    pub fn encode(input: &String) -> BoxResult<Vec<u8>> {
-        let char_arr: Vec<char> = input.chars().collect();
-        let mut buffer: Vec<u8> = vec![0; char_arr.len()];
+    pub fn encode(input: &str) -> BoxResult<Vec<u8>> {
+       for i in 0..input.len() as u32 {
+           let g=input[i];
+       }
+        // let char_arr: Vec<char> = input.chars().collect();
+        // char_arr.len();
+        // let mut buffer: Vec<u8> = vec![0; char_arr.len()];
+        // for i in 0..input.len() {
+        //     let c = char_arr[i];
+        //     buffer[i] = Sixbit::CHARSET_REVERSE[&c];
+        // }
+        // let buffer : Vec<u8> = input.chars().map(|c| Sixbit::CHARSET_REVERSE[&c]).collect();
+        // let buffer : Vec<u8> = input.chars().map(|c| 0).collect();
 
-        for i in 0..input.len() {
-            let c = char_arr[i];
-            buffer[i] = Sixbit::CHARSET_REVERSE[&c];
-        }
+        // let length = (buffer.len() as f64 * 6.0 / 8.0).ceil() as i32;
+        // let mut output: Vec<u8> = vec![0; length as usize];
+        let mut output: Vec<u8> = vec![0;0];
 
-        let length = (buffer.len() as f64 * 6.0 / 8.0).ceil() as i32;
-        let mut output: Vec<u8> = vec![0; length as usize];
-
-        for i in 0..(buffer.len() * 6) {
-            output[i / 8] =
-                (output[i / 8] | ((buffer[i / 6] >> (5 - (i % 6)) & 1) << (7 - (i % 8)))) as u8;
-        }
+        // for i in 0..(buffer.len() * 6) {
+        //     output[i / 8] =
+        //         (output[i / 8] | ((buffer[i / 6] >> (5 - (i % 6)) & 1) << (7 - (i % 8)))) as u8;
+        // }
 
         Ok(output)
     }

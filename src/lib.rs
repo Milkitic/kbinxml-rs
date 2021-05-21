@@ -1,4 +1,4 @@
-mod tests;
+// mod tests;
 
 pub use writer::KBinWriter;
 

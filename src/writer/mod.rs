@@ -128,63 +128,64 @@ impl BinWriter for KBinWriter<'_> {
         loop {
             match reader.read_event(&mut buf) {
                 Ok(Event::Start(ref e)) => {
-                    // let name = KBinWriter::<'_>::get_string(&e.local_name(), encoding).unwrap();
-                    let name = reader.decode(&e.local_name())?.to_string();
-                    self.ensure_holding(
-                        &mut type_str,
-                        &mut size_str,
-                        &mut holding_value,
-                        &mut holding_attrs,
-                        &mut typeid,
-                    )?;
+                    self.node_writer.write_string(&"asdfasdf".to_string())?;
+                    // // let name = KBinWriter::<'_>::get_string(&e.local_name(), encoding).unwrap();
+                    // let name = reader.decode(&e.local_name())?.to_string();
+                    // self.ensure_holding(
+                    //     &mut type_str,
+                    //     &mut size_str,
+                    //     &mut holding_value,
+                    //     &mut holding_attrs,
+                    //     &mut typeid,
+                    // )?;
 
-                    for attr in e.attributes() {
-                        let val = attr?;
-                        let attr_name = reader.decode(&val.key)?.to_string();
-                        let attr_val = reader.decode(&val.value)?.to_string();
-                        // let attr_name = KBinWriter::<'_>::get_string(val.key, encoding).unwrap();
-                        // let attr_val = KBinWriter::<'_>::get_string(&val.value, encoding).unwrap();
-                        if attr_name == "__type" {
-                            type_str = attr_val;
-                        } else if attr_name == "__count" {
-                            size_str = attr_val;
-                        } else {
-                            holding_attrs.entry(attr_name).or_insert(attr_val);
-                        }
-                    }
+                    // for attr in e.attributes() {
+                    //     let val = attr?;
+                    //     let attr_name = reader.decode(&val.key)?.to_string();
+                    //     let attr_val = reader.decode(&val.value)?.to_string();
+                    //     // let attr_name = KBinWriter::<'_>::get_string(val.key, encoding).unwrap();
+                    //     // let attr_val = KBinWriter::<'_>::get_string(&val.value, encoding).unwrap();
+                    //     if attr_name == "__type" {
+                    //         type_str = attr_val;
+                    //     } else if attr_name == "__count" {
+                    //         size_str = attr_val;
+                    //     } else {
+                    //         holding_attrs.entry(attr_name).or_insert(attr_val);
+                    //     }
+                    // }
 
-                    if type_str.is_empty() {
-                        self.node_writer.write_u8(1)?;
-                        self.node_writer.write_string(&name)?;
-                    } else {
-                        typeid = TypeDictionary::get_node_flag(&type_str)? as u8;
+                    // if type_str.is_empty() {
+                    //     self.node_writer.write_u8(1)?;
+                    //     self.node_writer.write_string(&name)?;
+                    // } else {
+                    //     typeid = TypeDictionary::get_node_flag(&type_str)? as u8;
 
-                        if !size_str.is_empty() {
-                            self.node_writer.write_u8(typeid | 0x40)?;
-                        } else {
-                            self.node_writer.write_u8(typeid)?;
-                        }
+                    //     if !size_str.is_empty() {
+                    //         self.node_writer.write_u8(typeid | 0x40)?;
+                    //     } else {
+                    //         self.node_writer.write_u8(typeid)?;
+                    //     }
 
-                        self.node_writer.write_string(&name)?;
-                    }
+                    //     self.node_writer.write_string(&name)?;
+                    // }
                 }
-                Ok(Event::End(e)) => {
-                    self.ensure_holding(
-                        &mut type_str,
-                        &mut size_str,
-                        &mut holding_value,
-                        &mut holding_attrs,
-                        &mut typeid,
-                    )?;
-                    self.node_writer.write_u8(0xFE)?;
-                }
-                Ok(Event::Text(e)) => {
-                    // let u8 = e.unescaped().unwrap();
-                    // let value = KBinWriter::<'_>::get_string(&u8, encoding).unwrap();
-                    let u8 = e.unescaped()?;
-                    let value = reader.decode(&u8)?;
-                    holding_value = value.to_string();
-                }
+                // Ok(Event::End(e)) => {
+                //     self.ensure_holding(
+                //         &mut type_str,
+                //         &mut size_str,
+                //         &mut holding_value,
+                //         &mut holding_attrs,
+                //         &mut typeid,
+                //     )?;
+                //     self.node_writer.write_u8(0xFE)?;
+                // }
+                // Ok(Event::Text(e)) => {
+                //     // let u8 = e.unescaped().unwrap();
+                //     // let value = KBinWriter::<'_>::get_string(&u8, encoding).unwrap();
+                //     let u8 = e.unescaped()?;
+                //     let value = reader.decode(&u8)?;
+                //     holding_value = value.to_string();
+                // }
                 Ok(Event::Eof) => break, // exits the loop when reaching end of file
                 Err(e) => {
                     return Err(Box::new(Error::new(

@@ -1,14 +1,14 @@
-extern crate xml;
-
 #[cfg(test)]
 mod tests {
     use std::io::BufReader;
     use std::{fs::File, io::Read};
-    use xml::reader::{EventReader, XmlEvent};
+
+    use encoding::Encoding;
+    use quick_xml::{events::Event, Reader};
 
     use crate::{
         traits::{BigEndianBinaryWrite, BinWriter},
-        types::StringToByteFunc,
+        types::{BoxResult, StringToByteFunc},
         util::converter::ValueConverter,
         writer::{buffer::DataBufferWriter, KBinWriter},
     };
@@ -20,45 +20,56 @@ mod tests {
             .fold(String::with_capacity(size * INDENT.len()), |r, s| r + s)
     }
 
+    fn get_string(raw: &[u8], encoding: &dyn Encoding) -> BoxResult<String> {
+        Ok(encoding.decode(raw, encoding::DecoderTrap::Replace)?)
+    }
+
     #[test]
     fn read_xml() {
-        let file = File::open("file.xml").unwrap();
+        let file = File::open("anotest.xml").unwrap();
         let file = BufReader::new(file);
-        let mut conf = xml::reader::ParserConfig::new();
-        conf.ignore_comments = true;
-        let parser = EventReader::new_with_config(file, conf);
+        let mut encoding: &(dyn Encoding + Send + Sync) =
+            encoding::label::encoding_from_whatwg_label("utf-8").unwrap();
+        let mut reader = Reader::from_reader(file);
+        reader.trim_text(true);
         let mut depth = 0;
+        let mut buf = Vec::new();
 
-        for e in parser {
-            match e {
-                Ok(XmlEvent::StartElement {
-                    name, attributes, ..
-                }) => {
-                    println!("{}+{}", indent(depth), name);
+        loop {
+            match reader.read_event(&mut buf) {
+                Ok(Event::Start(ref e)) => {
+                    let name = get_string(&e.local_name(), encoding).unwrap();
+                    println!("{}+`{}`", indent(depth), name);
                     depth += 1;
 
-                    for attr in attributes {
-                        println!("{}[{}]={}", indent(depth), attr.name, attr.value);
+                    for attr in e.attributes() {
+                        let result = attr.unwrap();
+                        let attr_name = get_string(result.key, encoding).unwrap();
+                        let attr_val = get_string(&result.value, encoding).unwrap();
+                        println!("{}[{}]=`{}`", indent(depth), attr_name, attr_val);
                     }
                 }
-                Ok(XmlEvent::EndElement { name }) => {
+                Ok(Event::End(e)) => {
+                    let name = get_string(e.local_name(), encoding).unwrap();
                     depth -= 1;
                     println!("{}-{}", indent(depth), name);
                 }
-                Ok(XmlEvent::StartDocument {
-                    version,
-                    encoding,
-                    standalone,
-                }) => {
-                    if let Some(b) = standalone {
-                        println!("has value {}", b);
-                    }
+                Ok(Event::Decl(e)) => {
+                    let enc = e.encoding().unwrap().unwrap();
+                    let enc_str = get_string(&enc, encoding).unwrap();
+                    encoding = encoding::label::encoding_from_whatwg_label(&enc_str).unwrap();
+                    // if let Some(b) = e.standalone() {
+                    //     println!("has value {}", b.unwrap());
+                    // }
 
                     println!("doc declaration");
                 }
-                Ok(XmlEvent::Characters(value)) => {
-                    println!("{}VALUE: {}", indent(depth), value);
+                Ok(Event::Text(e)) => {
+                    let u8 = e.unescaped().unwrap();
+                    let value = get_string(&u8, encoding).unwrap();
+                    println!("{}VALUE: `{}`", indent(depth), value);
                 }
+                Ok(Event::Eof) => break, // exits the loop when reaching end of file
                 Err(e) => {
                     println!("Error: {}", e);
                     break;
@@ -86,7 +97,9 @@ mod tests {
     fn write_buffers() {
         let result = KBinWriter::new_with_code_name("shift_jis");
         if result.is_ok() {
-            let mut file = File::open("test.xml").unwrap();
+            let mut file =
+                File::open("G:\\GitHub\\kbinxmlcs\\kbinxmlcs.Test\\bin\\Debug\\net5.0\\huge.xml")
+                    .unwrap();
             // let file = BufReader::new(file);
             let mut buffer = String::new();
             file.read_to_string(&mut buffer).unwrap();

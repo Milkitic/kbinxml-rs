@@ -3,7 +3,9 @@ use std::{
     os::raw::c_char,
 };
 
-use crate::{traits::BinWriter, KBinWriter};
+use stopwatch::Stopwatch;
+
+use crate::{KBinWriter, traits::BinWriter, util::codec::Sixbit};
 #[repr(C)]
 pub struct Result {
     pub is_error: bool,
@@ -57,6 +59,16 @@ fn get_zero_pointer() -> *const u8 {
 //     std::mem::forget(&arr);
 //     return Result::success(&arr);
 // }
+
+#[no_mangle]
+pub extern "C" fn sixcode_encode_test(str: *const c_char, count: i32) -> i64 {
+    let result = unsafe { CStr::from_ptr(str).to_str() }.unwrap();
+    let sw=Stopwatch::start_new();
+    for i in 0..count {
+        Sixbit::encode(&result.to_string()).unwrap();
+    }
+    sw.elapsed_ms()
+}
 
 #[no_mangle]
 pub extern "C" fn encode_codepage(xml_str: *const c_char, code_page: i32) -> Result {
