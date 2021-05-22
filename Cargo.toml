@@ -21,4 +21,3 @@ hex = "0.4.3"
 stringreader = "0.1.1"
 quick-xml = "0.22.0"
 stopwatch = "0.0.7"
-phf = { version = "0.8", features = ["macros"] }

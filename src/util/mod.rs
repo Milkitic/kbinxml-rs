@@ -57,8 +57,8 @@ impl NodeType {
 pub struct TypeDictionary {}
 
 impl TypeDictionary {
-    pub fn get_node_flag(t: &String) -> BoxResult<i32>{
-        match t.as_str(){
+    pub fn get_node_flag(t: &str) -> BoxResult<i32>{
+        match t{
             "s8"    =>Ok(2 ),
             "u8"    =>Ok(3 ),
             "s16"   =>Ok(4 ),

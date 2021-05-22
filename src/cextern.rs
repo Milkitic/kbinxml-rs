@@ -5,7 +5,7 @@ use std::{
 
 use stopwatch::Stopwatch;
 
-use crate::{KBinWriter, traits::BinWriter, util::codec::Sixbit};
+use crate::{traits::BinWriter, util::codec::Sixbit, KBinWriter};
 #[repr(C)]
 pub struct Result {
     pub is_error: bool,
@@ -63,9 +63,10 @@ fn get_zero_pointer() -> *const u8 {
 #[no_mangle]
 pub extern "C" fn sixcode_encode_test(str: *const c_char, count: i32) -> i64 {
     let result = unsafe { CStr::from_ptr(str).to_str() }.unwrap();
-    let sw=Stopwatch::start_new();
-    for i in 0..count {
-        Sixbit::encode(&result.to_string()).unwrap();
+    let sw = Stopwatch::start_new();
+    let str = result.to_string();
+    for _i in 0..count {
+        Sixbit::encode(&str).unwrap();
     }
     sw.elapsed_ms()
 }

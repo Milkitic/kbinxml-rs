@@ -7,6 +7,7 @@ use crate::{traits::BigEndianBinaryWrite, types::BoxResult, util::codec::Sixbit}
 pub struct NodeBufferWriter<'a> {
     stream: Vec<u8>,
     compressed: bool,
+    whatwg_name: String,
     encoding: &'a dyn Encoding,
 }
 
@@ -14,8 +15,10 @@ impl NodeBufferWriter<'_> {
     pub fn new_with_code_name(compressed: bool, code_name: &str) -> Result<Self> {
         let encoding = encoding::label::encoding_from_whatwg_label(code_name);
         if encoding.is_some() {
+            let enc = encoding.unwrap();
             return Ok(Self {
-                encoding: encoding.unwrap(),
+                encoding: enc,
+                whatwg_name: enc.whatwg_name().unwrap().to_string(),
                 stream: Vec::new(),
                 compressed,
             });
@@ -30,8 +33,10 @@ impl NodeBufferWriter<'_> {
     pub fn new_with_code_page(compressed: bool, code_page: usize) -> Result<Self> {
         let encoding = encoding::label::encoding_from_windows_code_page(code_page);
         if encoding.is_some() {
+            let enc = encoding.unwrap();
             return Ok(Self {
-                encoding: encoding.unwrap(),
+                encoding: enc,
+                whatwg_name: enc.whatwg_name().unwrap().to_string(),
                 stream: Vec::new(),
                 compressed,
             });
@@ -43,7 +48,11 @@ impl NodeBufferWriter<'_> {
         }
     }
 
-    pub fn write_string(&mut self, s: &String) -> BoxResult<()> {
+    pub fn clear(&mut self) {
+        self.stream.clear();
+    }
+
+    pub fn write_string(&mut self, s: &str) -> BoxResult<()> {
         if self.compressed {
             self.write_u8(s.len() as u8)?;
             self.write_bytes(&Sixbit::encode(s)?)?;
@@ -63,6 +72,11 @@ impl NodeBufferWriter<'_> {
         }
 
         Ok(())
+    }
+
+    /// Get a reference to the node buffer writer's whatwg name.
+    pub fn whatwg_name(&self) -> &String {
+        &self.whatwg_name
     }
 }
 
@@ -141,6 +155,10 @@ impl DataBufferWriter<'_> {
                 "Could not find target encoding.",
             ));
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.stream.clear();
     }
 
     /// Get a reference to the data buffer writer's encoding.

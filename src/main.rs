@@ -1,6 +1,8 @@
 mod tests;
 
 use crate::traits::BinWriter;
+use crate::util::codec::Sixbit;
+use stopwatch::Stopwatch;
 use writer::KBinWriter;
 
 mod cextern;
@@ -10,9 +12,18 @@ mod types;
 mod util;
 mod writer;
 
-use std::{fs::File, io::Read};
+use std::{fs::File, io::{Read, Write}};
 
 fn main() {
+    let sw = Stopwatch::start_new();
+    let count = 20000000;
+    let mut vec: Vec<u8> = Vec::new();
+    for i in 0..count {
+        let mut vec2: Vec<u8> = vec![0, 242, 234, 42, 132, 223, 5];
+        vec.append(&mut vec2);
+    }
+    println!("{},{}",vec.len(), sw.elapsed_ms());
+    return;
     let result = KBinWriter::new_with_code_name("shift_jis");
     if result.is_ok() {
         let mut file =
